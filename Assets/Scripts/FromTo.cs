@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿//Author: Archie Andrews
+using System.Collections;
 using UnityEngine;
 
 public class FromTo : MonoBehaviour
