@@ -2,9 +2,11 @@
 using System.Collections;
 using UnityEngine;
 
-public class FromTo : MonoBehaviour
+namespace Basics
 {
-    [Header("General Settings"), ]
+  public class FromTo : MonoBehaviour
+  {
+    [Header("General Settings"),]
     [Tooltip("How far long the line the target will be when traveling")]
     public AnimationCurve positionOverTime;
     [Tooltip("Will the movement loop")]
@@ -12,7 +14,7 @@ public class FromTo : MonoBehaviour
 
     [Header("Move On Start Settings"), Tooltip("Call movement on start")]
     public bool moveOnStart = true;
-    
+
     [Tooltip("Position the target will move to if Move On Start is set to true")]
     public Vector3 targetPosition;
     [Tooltip("Time taken to move from A to B if Move On Start is set to true")]
@@ -23,72 +25,74 @@ public class FromTo : MonoBehaviour
 
     public void Start()
     {
-        startPos = transform.position;
+      startPos = transform.position;
 
-        if (moveOnStart)
-            MoveFromTo(startPos, startPos + targetPosition, timeToTravel);
+      if (moveOnStart)
+        MoveFromTo(startPos, startPos + targetPosition, timeToTravel);
     }
 
     public void MoveFromTo(Vector3 from, Vector3 to, float time)
     {
-        if (fromToLoopRoutine != null)
-            StopCoroutine(fromToLoopRoutine);
+      if (fromToLoopRoutine != null)
+        StopCoroutine(fromToLoopRoutine);
 
-        StartCoroutine(FromToLoop(from, to, time));
+      StartCoroutine(FromToLoop(from, to, time));
     }
 
     IEnumerator FromToLoop(Vector3 from, Vector3 to, float time)
     {
-        float range = 0;
+      float range = 0;
 
-        if (isPingPong)
+      if (isPingPong)
+      {
+        while (true)
         {
-            while (true)
-            {
-                while (range < 1)
-                {
-                    transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
-                    range += Time.deltaTime / time;
-                    yield return null;
-                }
+          while (range < 1)
+          {
+            transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
+            range += Time.deltaTime / time;
+            yield return null;
+          }
 
-                while (range > 0)
-                {
-                    transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
-                    range -= Time.deltaTime / time;
-                    yield return null;
-                }
-            }
+          while (range > 0)
+          {
+            transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
+            range -= Time.deltaTime / time;
+            yield return null;
+          }
         }
-        else
+      }
+      else
+      {
+        while (range < 1)
         {
-            while (range < 1)
-            {
-                transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
-                range += Time.deltaTime / time;
-                yield return null;
-            }
+          transform.position = Vector3.Lerp(from, to, positionOverTime.Evaluate(range));
+          range += Time.deltaTime / time;
+          yield return null;
         }
+      }
 
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(0, 1, 0, 0.5f);
+      Gizmos.color = new Color(0, 1, 0, 0.5f);
 
-        if (Application.isPlaying)
-        {
-            Gizmos.DrawSphere(startPos + targetPosition, 0.5f);
-            Gizmos.DrawSphere(startPos, 0.5f);
+      if (Application.isPlaying)
+      {
+        Gizmos.DrawSphere(startPos + targetPosition, 0.5f);
+        Gizmos.DrawSphere(startPos, 0.5f);
 
-            Gizmos.DrawLine(startPos, startPos + targetPosition);
-        }
-        else
-        {
-            Gizmos.DrawSphere(transform.position, 0.5f);
-            Gizmos.DrawSphere(transform.position + targetPosition, 0.5f);
+        Gizmos.DrawLine(startPos, startPos + targetPosition);
+      }
+      else
+      {
+        Gizmos.DrawSphere(transform.position, 0.5f);
+        Gizmos.DrawSphere(transform.position + targetPosition, 0.5f);
 
-            Gizmos.DrawLine(transform.position, transform.position + targetPosition);
-        }
+        Gizmos.DrawLine(transform.position, transform.position + targetPosition);
+      }
     }
+  }
+
 }
