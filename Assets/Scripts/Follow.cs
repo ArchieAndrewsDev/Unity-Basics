@@ -13,9 +13,8 @@ namespace Basics
 
     public List<Transform> targets = new List<Transform>();
     public bool followPosition = true, followRotation = false;
-    public float positionSmoothTime = 1, rotationSmoothTime = 1;
+    public float positionSmoothTime = 1;
 
-    private Vector3 posVelocity, rotVelocity;
     private Transform[] subjectArray, targetArray;
 
     private void Awake()
@@ -86,7 +85,7 @@ namespace Basics
     {
       Vector3 meanPosition = Vector3.zero;
 
-      if (target.Length > 1)
+      if (target.Length > 1 && followState == FollowStates.Mean)
       {
         for (int i = 0; i < target.Length; i++)
         {
@@ -100,10 +99,13 @@ namespace Basics
       for (int i = 0; i < subject.Length; i++)
       {
         if (followPosition)
-          subject[i].position = Vector3.SmoothDamp(subject[i].position, meanPosition, ref posVelocity, positionSmoothTime);
+        {
+          float dist = Vector3.Distance(subject[i].position, meanPosition);
+          subject[i].position = Vector3.MoveTowards(subject[i].position, meanPosition, ((dist / positionSmoothTime) * Time.deltaTime) * 2);
+        }
 
         if (followRotation)
-          subject[i].eulerAngles = Vector3.SmoothDamp(subject[i].eulerAngles, target[0].eulerAngles, ref rotVelocity, rotationSmoothTime);
+          subject[i].rotation = target[0].rotation;
       }
     }
     #endregion
@@ -167,9 +169,24 @@ namespace Basics
       instance.followRotation = EditorGUILayout.Toggle("Follow Rotation", instance.followRotation);
 
       instance.positionSmoothTime = EditorGUILayout.FloatField("Position Smooth Time", instance.positionSmoothTime);
-      instance.rotationSmoothTime = EditorGUILayout.FloatField("Rotation Smooth Time", instance.rotationSmoothTime);
 
-      TargetGUI(instance);
+      switch (instance.followState)
+      {
+        case FollowStates.Me:
+          TargetGUI(instance);
+          break;
+        case FollowStates.You:
+
+          if (instance.targets.Count < 1)
+            instance.targets.Add(null);
+
+          EditorGUILayout.PrefixLabel("Target");
+          instance.targets[0] = (Transform)EditorGUILayout.ObjectField(instance.targets[0], typeof(Transform), true);
+          break;
+        case FollowStates.Mean:
+          TargetGUI(instance);
+          break;
+      }
     }
 
     public void TargetGUI(Follow instance)
@@ -206,7 +223,7 @@ namespace Basics
 
     private void DrawPrefabIcon(Follow instance, int id)
     {
-      EditorGUILayout.BeginHorizontal("box");
+      EditorGUILayout.BeginHorizontal();
       instance.targets[id] = (Transform)EditorGUILayout.ObjectField(instance.targets[id], typeof(Transform), true);
 
       GUI.color = Color.red;
