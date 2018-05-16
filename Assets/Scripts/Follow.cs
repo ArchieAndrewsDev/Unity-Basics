@@ -107,7 +107,7 @@ namespace Basics
 
                 if (followRotation)
                 {
-                    float degDiff = subject[i].eulerAngles.magnitude - target[0].eulerAngles.magnitude;
+                    float degDiff = Quaternion.Angle(subject[i].rotation, target[0].rotation);
                     degDiff = Mathf.Abs(degDiff);
                     float maxDegDelta = ((degDiff / rotationSmoothTime) * Time.deltaTime) * 2;
                     subject[i].rotation = Quaternion.RotateTowards(subject[i].rotation, target[0].rotation, maxDegDelta);
