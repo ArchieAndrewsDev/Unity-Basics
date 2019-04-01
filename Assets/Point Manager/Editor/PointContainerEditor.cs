@@ -1,0 +1,140 @@
+﻿using UnityEngine;
+
+namespace Basics.PointContainer.Editor
+{
+    using UnityEditor;
+
+    [CustomEditor(typeof(PointContainer))]
+    public class PointContainerEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            PointContainer myTarget = (PointContainer)target;
+
+            if (myTarget.activeId >= myTarget.points.Count)
+                myTarget.activeId = Mathf.Clamp(myTarget.points.Count - 1, 0, myTarget.points.Count);
+
+            GUILayout.Label("Tools");
+            EditorGUILayout.BeginVertical("box");
+
+            if (GUILayout.Button("Add New Point"))
+            {
+                Vector3 startPoint = (myTarget.points.Count > 0) ? myTarget.points[myTarget.activeId].LocalPosition : Vector3.zero;
+
+                myTarget.AddPoint(1, startPoint);
+                myTarget.activeId = myTarget.points.Count;
+            }
+
+            if (GUILayout.Button("Snap All To Ground"))
+            {
+                for (int i = 0; i < myTarget.points.Count; i++)
+                {
+                    myTarget.SnapToGround(i);
+                }
+            }
+
+            GUI.color = (Tools.current == Tool.None) ? Color.red : Color.green;
+            if (GUILayout.Button("Toggle Root Transform"))
+                Tools.current = (Tools.current != Tool.None) ? Tool.None : Tool.Move;
+
+            GUI.color = Color.white;
+
+            EditorGUILayout.EndVertical();
+
+            GUILayout.Label("Points");
+            EditorGUILayout.BeginVertical("box");
+
+            if (myTarget.points.Count > 0)
+            {
+                for (int i = 0; i < myTarget.points.Count; i++)
+                {
+                    DrawPoint(i, myTarget);
+                }
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawPoint(int id, PointContainer target)
+        {
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.BeginHorizontal();
+
+            GUI.color = (id == target.activeId) ? Color.green : Color.white;
+
+            if (GUILayout.Button(string.Format("Select Point {0}", id)))
+                target.activeId = id;
+
+            GUI.color = Color.white;
+            EditorGUILayout.BeginVertical("box");
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("X");
+            target.points[id].LocalPosition.x = EditorGUILayout.FloatField(target.points[id].LocalPosition.x);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Y");
+            target.points[id].LocalPosition.y = EditorGUILayout.FloatField(target.points[id].LocalPosition.y);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Z");
+            target.points[id].LocalPosition.z = EditorGUILayout.FloatField(target.points[id].LocalPosition.z);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.EndVertical();
+
+            if (target.points[id].GetPointInRadius)
+            {
+                EditorGUILayout.BeginVertical("box");
+                GUILayout.Label("Radius");
+                target.points[id].Radius = EditorGUILayout.Slider(target.points[id].Radius, .1f, 10f);
+                EditorGUILayout.EndVertical();
+            }
+
+            if (GUILayout.Button("Snap To Ground"))
+                target.SnapToGround(id);
+
+            GUI.color = Color.red;
+            if (GUILayout.Button("X"))
+                target.RemovePoint(id);
+
+            GUI.color = Color.white;
+
+            EditorGUILayout.EndHorizontal();
+
+            target.points[id].GetPointInRadius = EditorGUILayout.Toggle("Get random point within radius", target.points[id].GetPointInRadius);
+
+            EditorGUILayout.EndVertical();
+
+
+            SceneView.RepaintAll();
+        }
+
+        protected virtual void OnSceneGUI()
+        {
+            PointContainer myTarget = (PointContainer)target;
+
+            if (myTarget.points.Count <= 0)
+                return;
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newTargetPosition = Handles.PositionHandle(myTarget.transform.position + myTarget.points[myTarget.activeId].LocalPosition, Quaternion.identity);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(myTarget, "Move Point");
+                myTarget.points[myTarget.activeId].LocalPosition = newTargetPosition - myTarget.transform.position;
+            }
+
+            for (int i = 0; i < myTarget.points.Count; i++)
+            {
+                Handles.color = (i == myTarget.activeId) ? new Color(0, 1, 0, .4f) : new Color(1, .5f, 0, .4f);
+                float radius = (myTarget.points[i].GetPointInRadius) ? myTarget.points[i].Radius : .5f;
+                Handles.DrawSolidDisc(myTarget.transform.position + myTarget.points[i].LocalPosition, Vector3.up, radius);
+                Handles.color = Color.black;
+                Handles.Label(myTarget.transform.position + myTarget.points[i].LocalPosition, i.ToString());
+            }
+        }
+    }
+}
