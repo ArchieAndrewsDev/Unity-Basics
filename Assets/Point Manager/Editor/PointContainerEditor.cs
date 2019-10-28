@@ -7,6 +7,27 @@ namespace Basics.PointContainer.Editor
     [CustomEditor(typeof(PointContainer))]
     public class PointContainerEditor : Editor
     {
+        private void Awake()
+        {
+            //Add delegate
+            Selection.selectionChanged += SelectionCheck;
+        }
+
+        private void OnDestroy()
+        {
+            //Remove delegate
+            Selection.selectionChanged -= SelectionCheck;
+        }
+
+        private void SelectionCheck()
+        {
+            PointContainer myTarget = (PointContainer)target;
+
+            //If the target has been deleted by the time this delegate gets called then don't run the following code
+            if(myTarget != null)
+                Tools.current = (Selection.activeGameObject == myTarget.gameObject) ? Tool.None : Tool.Move;
+        }
+
         public override void OnInspectorGUI()
         {
             //Create a target to grab data from
@@ -37,8 +58,6 @@ namespace Basics.PointContainer.Editor
 
             //Change colour of points based on selected point
             GUI.color = (Tools.current == Tool.None) ? Color.red : Color.green;
-            if (GUILayout.Button("Toggle Root Transform"))
-                Tools.current = (Tools.current != Tool.None) ? Tool.None : Tool.Move;
 
             GUI.color = Color.white;
 
