@@ -66,6 +66,8 @@ namespace Basics.PointContainer
 
             if (Physics.Raycast(ray, out hit))
                 points[id].LocalPosition = transform.InverseTransformPoint(hit.point);
+            else
+                Debug.LogWarning("No collider found under point, unable to snap");
         }
 
         private Vector3 GetPosition(int id, bool getCenterPoint = false)

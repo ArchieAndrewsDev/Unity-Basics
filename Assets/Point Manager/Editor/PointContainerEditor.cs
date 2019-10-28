@@ -9,8 +9,10 @@ namespace Basics.PointContainer.Editor
     {
         public override void OnInspectorGUI()
         {
+            //Create a target to grab data from
             PointContainer myTarget = (PointContainer)target;
 
+            //This makes sure that the active id is not out of bounds of the points array
             if (myTarget.activeId >= myTarget.points.Count)
                 myTarget.activeId = Mathf.Clamp(myTarget.points.Count - 1, 0, myTarget.points.Count);
 
@@ -33,6 +35,7 @@ namespace Basics.PointContainer.Editor
                 }
             }
 
+            //Change colour of points based on selected point
             GUI.color = (Tools.current == Tool.None) ? Color.red : Color.green;
             if (GUILayout.Button("Toggle Root Transform"))
                 Tools.current = (Tools.current != Tool.None) ? Tool.None : Tool.Move;
@@ -44,6 +47,7 @@ namespace Basics.PointContainer.Editor
             GUILayout.Label("Points");
             EditorGUILayout.BeginVertical("box");
 
+            //If we have active points then update the UI with their editors
             if (myTarget.points.Count > 0)
             {
                 for (int i = 0; i < myTarget.points.Count; i++)
@@ -120,7 +124,10 @@ namespace Basics.PointContainer.Editor
                 return;
 
             EditorGUI.BeginChangeCheck();
-            Vector3 newTargetPosition = Handles.PositionHandle(myTarget.transform.position + myTarget.points[myTarget.activeId].LocalPosition, Quaternion.identity);
+            Vector3 newTargetPosition = Vector3.zero;
+            if(myTarget.activeId >= 0 && myTarget.activeId < myTarget.points.Count)
+                newTargetPosition = Handles.PositionHandle(myTarget.transform.position + myTarget.points[myTarget.activeId].LocalPosition, Quaternion.identity);
+
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(myTarget, "Move Point");
