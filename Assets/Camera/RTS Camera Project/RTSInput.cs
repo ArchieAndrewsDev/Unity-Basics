@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Basics.Camera
+namespace Basics.Camera.RTS
 {
     [RequireComponent(typeof(RTSCameraMotor))]
     public class RTSInput : MonoBehaviour
