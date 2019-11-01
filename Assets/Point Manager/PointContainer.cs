@@ -30,7 +30,7 @@ namespace Basics.PointContainer
 
         public Vector3 GetRoundRobinPosition()
         {
-            roundRobinCount = GenericMethods.GetAdjacentId(roundRobinCount, points.Count, 1);
+            roundRobinCount = GetAdjacentId(roundRobinCount, points.Count, 1);
             return GetPosition(roundRobinCount);
         }
 
@@ -95,6 +95,19 @@ namespace Basics.PointContainer
         public Vector3 GetEndPoint()
         {
             return GetExactPosition(points.Count - 1);
+        }
+
+        private int GetAdjacentId(int curId, int size, int direction)
+        {
+            int newId = curId += direction;
+
+            if (newId >= size)
+                newId = 0;
+
+            if (newId < 0)
+                newId = size - 1;
+
+            return newId;
         }
     }
 }
